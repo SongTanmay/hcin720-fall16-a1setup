@@ -13,7 +13,263 @@
 
 <body>
 	<script src="lib/jquery-2.1.3.min.js"></script>
-	<script src="lib/paper-full.js"></script>
+	<script src="js/three.js"></script>
+	<script src="js/Projector.js"></script>
+	<script src="js/CanvasRenderer.js"></script>
+	<script src="js/stats.min.js"></script>
+	<script src="js/tween.min.js"></script>
 Hi !!!
+<section id=rec_container_section>
+	<div id='rec'>
+		<canvas id='canvasID' style=""></canvas>
+	</div>
+</section>
+<script>
+var container, stats;
+var camera, scene, renderer;
+
+var raycaster;
+var mouse;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var mouseX = 0, mouseY = 0;
+
+init();
+animate();
+
+function init() {
+
+	container = document.getElementById('rec');
+	//container = document.createElement( 'div' );
+	document.getElementById('rec_container_section').appendChild( container );
+
+	/*var info = document.createElement( 'div' );
+	info.style.position = 'absolute';
+	info.style.top = '10px';
+	info.style.width = '100%';
+	info.style.textAlign = 'center';
+	info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> - clickable objects';
+	container.appendChild( info );*/
+
+
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.y = 100;
+	camera.position.z = 500;
+
+	scene = new THREE.Scene();
+
+
+	var geometry = new THREE.BoxGeometry( 200, 200, 10 );
+
+	var $ = window.$;
+			//Fill in the background
+			var public_key = '5Jp088mRXvH4bVDKVKpr';
+			function drawData()
+			{
+				$.ajax({
+					url: 'https://data.sparkfun.com/output/' + public_key + '.json',
+					data: {page: 1},
+					dataType: 'jsonp',
+				}).done(
+					function(results)
+					{
+						//console.log("Got " + results.length + " results");
+						//console.log(results);
+						console.log("results");
+
+							$.each(results,function(index, data){
+								if(index < 5){
+									var object1 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.6 } ) );
+									object1.position.x = (data.humidity - Math.floor(data.humidity)).toFixed(3)*1000;
+									object1.position.z = data.temp*index;
+									scene.add( object1 );
+									//filldata.push([new Date(data.timestamp).getMinutes().toString(), parseInt(data.temperature)]);
+									console.log(data);
+								}
+							});
+
+
+
+						window.setTimeout(drawData, 30000);
+					}
+				);
+			}
+			drawData();
+
+		/*var object1 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.6 } ) );
+		//object.position.x = Math.random() * 800 - 400;
+		object1.position.x = -300;
+		//object1.position.y = object1.position.x + 150;
+		object1.position.z = 0;
+		//object1.scale.x = Math.random() * 2 + 1;
+
+		//object.scale.y = Math.random() * 2 + 1;
+		//object.scale.z = Math.random() * 2 + 1;
+		//object.rotation.x = Math.random() * 2 * Math.PI;
+		//object.rotation.y = Math.random() * 2 * Math.PI;
+		//object.rotation.z = Math.random() * 2 * Math.PI;
+
+		scene.add( object1 );
+
+	var object2 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.6 } ) );
+	object2.position.x = object1.position.x + 180;
+//	object2.position.y = object2.position.x + 150;
+	object2.position.z = 100;
+	scene.add( object2 );
+	var object3 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.6 } ) );
+	object3.position.x = object1.position.x + 360;
+	//object3.position.y = object3.position.x + 150;
+	object3.position.z = 0;
+	scene.add( object3 );
+
+	//*/
+
+	raycaster = new THREE.Raycaster();
+	mouse = new THREE.Vector2();
+
+	var canvas = document.getElementById("canvasID");
+	renderer = new THREE.CanvasRenderer({ canvas: canvas });
+	//renderer = new THREE.CanvasRenderer();
+	renderer.setClearColor( 0xf0f0f0 );
+	renderer.setPixelRatio( window.devicePixelRatio );
+
+	renderer.setSize( window.innerWidth, document.body.clientHeight );
+	container.appendChild(renderer.domElement);
+
+	stats = new Stats();
+	//container.appendChild( stats.dom );
+
+	document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+	//
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+}
+
+function onWindowResize() {
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+
+function onDocumentMouseMove( event ) {
+	mouseX = event.clientX - windowHalfX;
+	mouseY = event.clientY - windowHalfY;
+}
+
+function onDocumentTouchStart( event ) {
+
+	event.preventDefault();
+
+	event.clientX = event.touches[0].clientX;
+	event.clientY = event.touches[0].clientY;
+	onDocumentMouseDown( event );
+
+}
+
+function onDocumentMouseDown( event ) {
+
+	event.preventDefault();
+
+	//mouse.x = ( (event.clientX / renderer.domElement.clientWidth) / renderer.domElement.width ) * 2 - 1;
+	//mouse.y = - ( (event.clientY / renderer.domElement.clientHeight) / renderer.domElement.height ) * 2 + 1;
+
+	//mouse.x = ( ( event.clientX - renderer.domElement.offsetLeft ) / renderer.domElement.width ) * 2 - 1;
+	//mouse.y = - ( ( event.clientY - renderer.domElement.offsetTop ) / renderer.domElement.height ) * 2 + 1;
+
+	//mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+	//mouse.y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+	mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+	raycaster.setFromCamera( mouse, camera );
+
+	var intersects = raycaster.intersectObjects( scene.children );
+
+	if ( intersects.length > 0 && intersects[ 0 ].object.position.z <= 10) {
+
+		new TWEEN.Tween( intersects[ 0 ].object.position ).to( {
+			x: intersects[ 0 ].object.position.x,
+			y: intersects[ 0 ].object.position.y,
+			z: 100 }, 3000 )
+		.easing( TWEEN.Easing.Elastic.Out).start();
+
+		//new TWEEN.Tween( intersects[ 0 ].object.rotation ).to( {
+		//	x: Math.random() * 2 * Math.PI,
+		//	y: Math.random() * 2 * Math.PI,
+		//	z: Math.random() * 2 * Math.PI }, 2000 )
+	//	.easing( TWEEN.Easing.Elastic.Out).start();
+
+		scene.traverse( function( node ) {
+
+					if ( node instanceof THREE.Mesh ) {
+
+							if ( node != intersects[ 0 ].object){
+
+							 new TWEEN.Tween( node.position ).to( {
+									x: node.position.x,
+									y: node.position.y,
+									z: 0 }, 3000 )
+							 .easing( TWEEN.Easing.Elastic.Out).start();
+
+							}
+					}
+
+			} );
+
+	}
+
+	/*
+	// Parse all the faces
+	for ( var i in intersects ) {
+
+		intersects[ i ].face.material[ 0 ].color.setHex( Math.random() * 0xffffff | 0x80000000 );
+
+	}
+	*/
+}
+
+//
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	render();
+	stats.update();
+
+}
+
+var radius = 60;
+var theta = 0;
+
+function render() {
+
+	TWEEN.update();
+
+	theta += 0.1;
+	camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+	camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+
+	//camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+	//camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+	//camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+	camera.lookAt( scene.position );
+
+	renderer.render( scene, camera );
+
+}
+
+</script>
 </body>
 </html>
