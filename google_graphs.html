@@ -6,9 +6,6 @@
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
 			var $ = window.$;
-
-			//Fill in the background
-
 			var public_key = 'v0yJoRRXKYcrpLdjzDqZ';
 			function drawData()
 			{
@@ -19,9 +16,6 @@
 				}).done(
 					function(results)
 					{
-						//console.log("Got " + results.length + " results");
-						//console.log(results);
-						console.log("results");
 						google.charts.load('current', {'packages':['corechart']});
 			     	google.charts.setOnLoadCallback(drawChart);
 
@@ -31,7 +25,6 @@
 						function drawChart() {
 							$.each(results,function(index, data){
 								filldata.push([new Date(data.timestamp).getMinutes().toString(), parseInt(data.temperature)]);
-								//console.log(filldata);
 							});
 			        var data = google.visualization.arrayToDataTable(filldata);
 
@@ -53,7 +46,6 @@
 		</script>
 	</head>
 	<body>
-
 		<div id="curve_chart" style="width: 900px; height: 500px"></div>
 	</body>
 </html>
