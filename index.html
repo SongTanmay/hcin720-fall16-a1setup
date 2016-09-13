@@ -79,7 +79,7 @@ function init() {
 	renderer = new THREE.CanvasRenderer({ canvas: canvas });
 	renderer.setClearColor( 0xf0f0f0 );
 	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, document.body.clientHeight );
+	renderer.setSize( window.innerWidth, window.innerHeight );
 	container.appendChild(renderer.domElement);
 	stats = new Stats();
 	$('canvas')[0].addEventListener( 'mousedown', onDocumentMouseDown, false );
