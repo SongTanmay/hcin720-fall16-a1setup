@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>coming soon !!!</title>
+	<title>HCIN-720</title>
 	<link href='http://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="lib/jquery-2.1.3.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<style>
 		body {
 			font-family: 'Quicksand', sans-serif;
@@ -12,8 +15,117 @@
 </head>
 
 <body>
-	<script src="lib/jquery-2.1.3.min.js"></script>
-	<script src="lib/paper-full.js"></script>
-Hi !!!
+	<script src="js/three.js"></script>
+	<script src="js/Projector.js"></script>
+	<script src="js/CanvasRenderer.js"></script>
+	<script src="js/stats.min.js"></script>
+	<script src="js/tween.min.js"></script>
+	<section id=rec_container_section>
+		<div id='rec'>
+			<canvas id='canvasID' style=""></canvas>
+		</div>
+	</section>
+	This is achived with the help of mrdoob's awesome ThreeJS !!!
+<script>
+var container, stats;
+var camera, scene, renderer;
+var raycaster;
+var mouse;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var mouseX = 0, mouseY = 0;
+init();
+animate();
+function init() {
+	container = document.getElementById('rec');
+	document.getElementById('rec_container_section').appendChild( container );
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.y = 100;
+	camera.position.z = 500;
+	scene = new THREE.Scene();
+	var geometry = new THREE.BoxGeometry( 20, 200, 10 );
+	var $ = window.$;
+			var public_key = '5Jp088mRXvH4bVDKVKpr';
+			function buildTiles()
+			{
+				$.ajax({
+					url: 'https://data.sparkfun.com/output/' + public_key + '.json',
+					data: {page: 1},
+					dataType: 'jsonp',
+				}).done(
+					function(results)
+					{
+						//This is to clear previous children
+						if(scene.children.length > 0){
+							scene.children.splice(0,scene.children.length);
+						}
+							$.each(results,function(index, data){
+								var date = new Date(data.timestamp);
+								if(index < 10){ // We are only interested in latest 10 results
+									var object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.6 } ) );
+									object.position.x = -(date.getHours() + date.getMinutes() + date.getSeconds())*(5-index);
+									object.position.z = data.temp*index;
+									scene.add( object );
+								}
+							});
+						window.setTimeout(buildTiles, 30000);
+					}
+				);
+			}
+			buildTiles();
+	raycaster = new THREE.Raycaster();
+	mouse = new THREE.Vector2();
+	var canvas = document.getElementById("canvasID");
+	renderer = new THREE.CanvasRenderer({ canvas: canvas });
+	renderer.setClearColor( 0xf0f0f0 );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	container.appendChild(renderer.domElement);
+	stats = new Stats();
+	$('canvas')[0].addEventListener( 'mousedown', onDocumentMouseDown, false );
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	window.addEventListener( 'resize', onWindowResize, false );
+}
+
+function onWindowResize() {
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function onDocumentMouseMove( event ) {
+	mouseX = event.clientX - windowHalfX;
+	mouseY = event.clientY - windowHalfY;
+}
+
+function onDocumentMouseDown( event ) {
+	event.preventDefault();
+	mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+	raycaster.setFromCamera( mouse, camera );
+	var intersects = raycaster.intersectObjects( scene.children );
+	//Here one can access the clicked object with intersects[ 0 ]. And then can manipulate the object as well as DOM.
+	//alert('At this Time ' + intersects[ 0 ].point.x + ' the Temprature was ' + intersects[ 0 ].point.y);
+	$('section').append("<div class='alert alert-success'><a href='#' class='close' data-dismiss='alert' aria-label='close'>&times;</a><strong>Success!</strong> You have successfully clicked the tile.</div>");
+}
+
+function animate() {
+	requestAnimationFrame( animate );
+	render();
+	stats.update();
+}
+var radius = 60;
+var theta = 0;
+function render() {
+	TWEEN.update();
+	theta += 0.1;
+	camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+	camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+	camera.lookAt( scene.position );
+	renderer.render( scene, camera );
+}
+</script>
 </body>
 </html>
